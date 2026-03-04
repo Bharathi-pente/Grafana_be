@@ -1,11 +1,11 @@
-const winston = require('winston');
-const { sendLogBatch } = require('./otel');
+const winston = require("winston");
+const { sendLogBatch } = require("./otel");
 const { env } = process;
 
-const serviceName = env.SERVICE_NAME || 'node-test-service';
+const serviceName = env.SERVICE_NAME || "node-test-service";
 
 const logger = winston.createLogger({
-  level: env.LOG_LEVEL || 'info',
+  level: env.LOG_LEVEL || "info",
   format: winston.format.combine(
     winston.format.timestamp(),
     winston.format.printf(({ timestamp, level, message, ...meta }) => {
@@ -18,16 +18,26 @@ const logger = winston.createLogger({
 
 async function logStructured(level, message, route, extra = {}) {
   const log = {
-    timestamp: new Date().toISOString(),
+    timeUnixNano: Date.now() * 1000000,
     severityText: level.toUpperCase(),
-    body: message,
-    attributes: Object.assign({ route, service: serviceName }, extra)
+    body: { stringValue: message },
+    attributes: [
+      { key: "route", value: { stringValue: route } },
+      { key: "service.name", value: { stringValue: serviceName } }
+    ]
   };
 
-  // Send to OTEL collector (non-blocking) - commented out for local development
-  // sendLogBatch([log]).catch(() => {});
+  Object.entries(extra).forEach(([key, value]) => {
+    log.attributes.push({
+      key,
+      value: { stringValue: String(value) }
+    });
+  });
 
-  // Also log locally to console via Winston
+  // ✅ SEND LOGS TO OTEL
+  sendLogBatch([log]).catch(() => {});
+
+  // console log
   logger.log(level, message, { route, ...extra });
 }
 

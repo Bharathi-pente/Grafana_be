@@ -25,8 +25,8 @@ router.post('/users', express.json(), (req, res) => {
 router.get('/combined', async (req, res) => {
   try {
     const [customersRes, adminsRes] = await Promise.all([
-      fetch('http://host.docker.internal:4001/customers'),
-      fetch('http://host.docker.internal:4002/admins')
+      fetch('http://172.17.0.1:4001/customers'),
+      fetch('http://172.17.0.1:4002/admins')
     ]);
     const customers = await customersRes.json();
     const admins = await adminsRes.json();

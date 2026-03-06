@@ -12,6 +12,6 @@ EXPOSE 4002
 
 ENV PORT=4002
 ENV SERVICE_NAME=admin-service
-ENV OTEL_COLLECTOR_ENDPOINT=http://host.docker.internal:3100/loki/api/v1/push
+ENV OTEL_COLLECTOR_ENDPOINT=http://172.17.0.1:3100/loki/api/v1/push
 
 CMD ["node", "server.js"]

@@ -12,6 +12,6 @@ EXPOSE 4000
 
 ENV PORT=4000
 ENV SERVICE_NAME=node-test-service
-ENV OTEL_COLLECTOR_ENDPOINT=http://otel-collector:4318/v1/logs
+ENV OTEL_COLLECTOR_ENDPOINT=http://host.docker.internal:3100/loki/api/v1/push
 
 CMD ["node", "server.js"]

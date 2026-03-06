@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { logStructured } = require('../logger');
+const fetch = require('node-fetch');
 
 const users = [];
 
@@ -19,6 +20,22 @@ router.post('/users', express.json(), (req, res) => {
   users.push(user);
   logStructured('info', 'Created user', '/users', { user });
   res.status(201).json(user);
+});
+
+router.get('/combined', async (req, res) => {
+  try {
+    const [customersRes, adminsRes] = await Promise.all([
+      fetch('http://host.docker.internal:4001/customers'),
+      fetch('http://host.docker.internal:4002/admins')
+    ]);
+    const customers = await customersRes.json();
+    const admins = await adminsRes.json();
+    logStructured('info', 'Fetched combined data', '/combined', { usersCount: users.length, customersCount: customers.length, adminsCount: admins.length });
+    res.json({ users, customers, admins });
+  } catch (err) {
+    logStructured('error', 'Error fetching combined data', '/combined', { error: err.message });
+    res.status(500).json({ error: 'Failed to fetch combined data' });
+  }
 });
 
 router.get('/error', (req, res) => {
